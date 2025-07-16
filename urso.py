@@ -39,7 +39,7 @@ class Urso(Dataset):
             return None
 
         set_filename = dataset_dir + '/' + subset + '_images.csv'
-        rgb_list_df = pd.read_csv(set_filename, names=['filename'], header=-1)
+        rgb_list_df = pd.read_csv(set_filename, names=['filename'], header=None)
         rgb_list = list(rgb_list_df['filename'])
 
         # Set camera params
