@@ -19,6 +19,8 @@ import random
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 import se3lib
+import time
+import cv2
 
 import utils
 import net
@@ -606,8 +608,6 @@ def detect_dataset(model, dataset, nr_images):
 def detect_video(model, dataset, video_path):
     ''' Experimental'''
 
-    import cv2
-
     # Video capture
     vcapture = cv2.VideoCapture(video_path)
     width = int(vcapture.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -625,7 +625,8 @@ def detect_video(model, dataset, video_path):
     R_cam_unreal = np.matrix([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
 
     # Define codec and create video writer
-    vwriter = cv2.VideoWriter("video_real.avi", cv2.VideoWriter_fourcc(*'MJPG'), fps, (int(width), int(height)))
+    timestamp = time.strftime('%H_%M_%S')
+    vwriter = cv2.VideoWriter(f"video_real_{timestamp}.avi", cv2.VideoWriter_fourcc(*'MJPG'), fps, (int(width), int(height)))
 
     count = 0
     pose_est_acc = []
@@ -635,7 +636,7 @@ def detect_video(model, dataset, video_path):
         count += 1
         # Read next image
         success, image = vcapture.read()
-        if success and count>16900:
+        if success:
             # OpenCV returns images as BGR, convert to RGB
             image = image[..., ::-1]
             image = image[:,1:-150,:] # crop
@@ -696,9 +697,11 @@ def detect_video(model, dataset, video_path):
             # plt.show(block=True)
             # Add image to video writer
             vwriter.write(image)
+        else:
+            raise Exception('Unable to read video file')
 
-        if count > 17200:
-            success = False
+        # if count > 17200:
+        #     success = False
 
     vwriter.release()
 

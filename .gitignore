@@ -1,3 +1,5 @@
 datasets/
 models/logs/
 __pycache__/
+*.mp4
+*.avi
