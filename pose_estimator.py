@@ -28,6 +28,12 @@ from config import Config
 
 import urso
 import speed
+import gc
+
+# Non-interactive mode for matplotlib
+import matplotlib
+matplotlib.use('Agg')
+plt.ioff()
 
 # Models directory (where weights are stored)
 MODEL_DIR = os.path.abspath("./models")
@@ -613,6 +619,8 @@ def detect_video(model, dataset, video_path):
     width = int(vcapture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(vcapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = vcapture.get(cv2.CAP_PROP_FPS)
+    frames = int(vcapture.get(cv2.CAP_PROP_FRAME_COUNT))
+    print('Video length', frames, 'frames')
 
     # Camera projection mat
     width = dataset.camera.width/2  # TODO: work on original image size not 1/2
@@ -626,13 +634,13 @@ def detect_video(model, dataset, video_path):
 
     # Define codec and create video writer
     timestamp = time.strftime('%H_%M_%S')
-    vwriter = cv2.VideoWriter(f"video_real_{timestamp}.avi", cv2.VideoWriter_fourcc(*'MJPG'), fps, (int(width), int(height)))
+    vwriter = cv2.VideoWriter(f"./outputs/output_{timestamp}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
 
     count = 0
     pose_est_acc = []
     success = True
     while success:
-        print("frame: ", count)
+        print(f"frame: {count} / {frames}")
         count += 1
         # Read next image
         success, image = vcapture.read()
@@ -691,12 +699,18 @@ def detect_video(model, dataset, video_path):
             # ax_1.set_xticks([])
             # ax_1.set_yticks([])
 
-            nr_bins_per_dim = model.config.ORI_BINS_PER_DIM
-            utils.visualize_weights(ori_pmf, ori_pmf, nr_bins_per_dim)
+            # nr_bins_per_dim = model.config.ORI_BINS_PER_DIM
+            # utils.visualize_weights(ori_pmf, ori_pmf, nr_bins_per_dim)
 
             # plt.show(block=True)
+
+            plt.close('all')
+            gc.collect()
+
             # Add image to video writer
             vwriter.write(image)
+        elif count >= frames:
+            print('Processing finished')
         else:
             raise Exception('Unable to read video file')
 
