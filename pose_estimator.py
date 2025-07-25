@@ -611,6 +611,78 @@ def detect_dataset(model, dataset, nr_images):
         ax.legend(loc='upper right', shadow=True, fontsize='x-small')
         plt.show()
 
+
+def detect_image(model, dataset, img_path): 
+    img = cv2.imread(img_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    cv2.namedWindow('Preview image', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Preview image', 700, 700)
+    preview = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    cv2.imshow('Preview image', preview)
+    cv2.waitKey(0)
+
+    width = dataset.camera.width/2  # TODO: work on original image size not 1/2
+    height = dataset.camera.height/2
+    fov_horizontal = np.pi / 2
+    fx = width / (2 * np.tan(dataset.camera.fov_x / 2))
+    fy = - height / (2 * np.tan(dataset.camera.fov_y / 2))
+    K = np.matrix([[fx, 0, width / 2], [0, fy, height / 2], [0, 0, 1]])
+
+    R_cam_unreal = np.matrix([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
+    image = img[..., ::-1]
+    image = image[:,1:-150,:] # crop
+    image = np.pad(image, [(400, 400), (400, 400), (0, 0)], mode='constant', constant_values=0)
+    image[:,:,0] = 0.21*image[:,:,0]+0.72*image[:,:,1]+0.07*image[:,:,2]
+    image[:, :, 1] = image[:,:,0]
+    image[:, :, 2] = image[:, :, 0]
+
+    # Resize to network input shape
+    molded_image, window, scale, padding, crop = utils.resize_image(
+        image,
+        min_dim=model.config.IMAGE_MIN_DIM,
+        min_scale=model.config.IMAGE_MIN_SCALE,
+        max_dim=model.config.IMAGE_MAX_DIM,
+        mode=model.config.IMAGE_RESIZE_MODE)
+
+    # Detect objects
+    results = model.detect([image], verbose=0)[0]
+
+    loc_est = results['loc']
+
+    ori_pmf = utils.stable_softmax(results['ori'])
+    q_est, q_est_cov = se3lib.quat_weighted_avg(dataset.ori_histogram_map, ori_pmf)
+
+    z = loc_est[2]
+    x = loc_est[0]
+    y = loc_est[1]
+    print(str(z) + " " + str(x) + " " + str(y))
+
+    # Recover Unreal orientation: R_wo
+    R_co = se3lib.quat2SO3(q_est)
+    R_co = R_cam_unreal.T * R_co
+    R_wc = se3lib.euler2SO3_unreal(0, 0, 0)
+    R_wo = R_wc*R_co
+    roll, pitch, yaw = se3lib.SO32euler(R_wo)
+    #
+    print(str(-pitch) + " " + str(yaw) + " " + str(-roll))
+
+    # Stack frame gt
+    pose_est = np.array([loc_est[2], loc_est[0], loc_est[1], -pitch, yaw, -roll])
+    print(pose_est)
+
+    # Crop and resize image to match original input size
+    margin = (model.config.IMAGE_MAX_DIM - 480) // 2
+    image = molded_image[margin:model.config.IMAGE_MAX_DIM-margin, :, :]
+
+    # Show image
+    #fig, ax_1 = plt.subplots(1, 1, figsize=(12, 8))
+
+    utils.plot_axes(image, q_est, loc_est, K, 5.0)
+    cv2.imshow('Preview image', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
 def detect_video(model, dataset, video_path):
     ''' Experimental'''
 
@@ -954,6 +1026,12 @@ if __name__ == '__main__':
             dataset = urso.Urso()
             dataset.load_dataset(dataset_dir, config, "test")
             detect_video(model, dataset, args.video)
+
+        elif args.image:
+            dataset = urso.Urso()
+            dataset.load_dataset(dataset_dir, config, "test")
+            detect_image(model, dataset, args.image)
+
         else:
             # Load validation dataset
             if args.dataset != "speed":
