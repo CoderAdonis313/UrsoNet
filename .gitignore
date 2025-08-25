@@ -3,3 +3,6 @@ models/logs/
 __pycache__/
 *.mp4
 *.avi
+inputs/
+outputs/
+weights/

@@ -11,8 +11,15 @@ Usage: Check README
 """
 
 import os
-import numpy as np
 import os.path
+import warnings
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', category=FutureWarning)  # hide deprecation warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
+import numpy as np
 import skimage
 import pandas as pd
 import random
@@ -161,6 +168,7 @@ def fit_GMM_to_orientation(q_map, pmf, nr_iterations, var, nr_max_modes=4):
 
     return Q_mean_best, Q_var_best, Q_priors_best, scores
 
+
 def evaluate_image(model, dataset, image_id):
 
     # Load pose in all formats
@@ -221,6 +229,7 @@ def evaluate_image(model, dataset, image_id):
     esa_score = loc_rel_err + angular_err
 
     return loc_err, angular_err, loc_rel_err, esa_score
+
 
 def test_and_submit(model, dataset_virtual, dataset_real):
     """ Evaluates model on ESA challenge test-set (no labels)
@@ -832,6 +841,7 @@ def detect_video(model, dataset, video_path):
     #     vwriter2.write(img_cv)
     #
     # vwriter2.release()
+
 
 def train(model, dataset_train, dataset_val):
     """Train the model."""

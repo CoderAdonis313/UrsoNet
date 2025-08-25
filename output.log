@@ -1,0 +1,50 @@
+Command:  test
+Dataset:  soyuz_easy
+Logs:  /eng/home/atembulk/Dev/UrsoNet/models/logs
+
+Configurations:
+BACKBONE                       resnet50
+BASE_LEARNING_RATE             0.0001
+BATCH_SIZE                     1
+BETA                           6.0
+BOTTLENECK_WIDTH               128
+BRANCH_SIZE                    1024
+CLR                            False
+CLR_STEP_SIZE                  4000
+DECOUPLE_ORIENTATION           False
+EPOCHS                         100
+F16                            False
+GPU_COUNT                      1
+GRADIENT_CLIP_NORM             5.0
+IMAGES_PER_GPU                 1
+IMAGE_MAX_DIM                  640
+IMAGE_META_SIZE                12
+IMAGE_MIN_DIM                  512
+IMAGE_MIN_SCALE                0
+IMAGE_RESIZE_MODE              pad64
+IMAGE_SHAPE                    [512 640   3]
+LEARNABLE_LOSS_WEIGHTS         False
+LEARNING_MOMENTUM              0.9
+LEARNING_RATE                  0.001
+LOC_BINS_PER_DIM               16
+LOSS_WEIGHTS                   {'loc_loss': 1.0, 'ori_loss': 1.0, 'k2_loss': 1.0, 'k3_loss': 1.0}
+MAX_LEARNING_RATE              0.0005
+MEAN_PIXEL                     [123.7 116.8 103.9]
+NAME                           soyuz_easy
+NR_DENSE_LAYERS                1
+NR_IMAGE_CHANNELS              3
+OPTIMIZER                      SGD
+ORIENTATION_PARAM              quaternion
+ORI_BINS_PER_DIM               24
+REGRESS_KEYPOINTS              False
+REGRESS_LOC                    True
+REGRESS_ORI                    False
+ROT_AUG                        False
+ROT_IMAGE_AUG                  False
+SIM2REAL_AUG                   False
+STEPS_PER_EPOCH                1000
+TRAIN_BN                       False
+VALIDATION_STEPS               50
+WEIGHT_DECAY                   0.0001
+
+
