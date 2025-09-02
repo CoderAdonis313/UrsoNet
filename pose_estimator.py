@@ -621,6 +621,7 @@ def detect_dataset(model, dataset, nr_images):
         plt.show()
 
 
+############# CUSTOM ###############
 def detect_image(model, dataset, img_path): 
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
