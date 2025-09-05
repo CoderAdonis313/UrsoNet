@@ -484,6 +484,7 @@ def detect_dataset(model, dataset, nr_images):
     # Variance used only for prob. orientation estimation
     delta = model.config.BETA / model.config.ORI_BINS_PER_DIM
     var = delta ** 2 / 12
+    # plt.ion()
 
     for i in range(nr_images):
         image_id = random.choice(dataset.image_ids)
@@ -620,16 +621,20 @@ def detect_dataset(model, dataset, nr_images):
         ax.legend(loc='upper right', shadow=True, fontsize='x-small')
         plt.show()
 
+    # plt.ioff()
+
 
 ############# CUSTOM ###############
 def detect_image(model, dataset, img_path): 
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    cv2.namedWindow('Preview image', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('Preview image', 700, 700)
+    win_name = 'Input image'
+    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(win_name, 700, 700)
     preview = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    cv2.imshow('Preview image', preview)
+    cv2.imshow(win_name, preview)
     cv2.waitKey(0)
+    cv2.destroyWindow(win_name)
 
     width = dataset.camera.width/2  # TODO: work on original image size not 1/2
     height = dataset.camera.height/2
@@ -655,7 +660,7 @@ def detect_image(model, dataset, img_path):
         mode=model.config.IMAGE_RESIZE_MODE)
 
     # Detect objects
-    results = model.detect([image], verbose=0)[0]
+    results = model.detect([image], verbose=1)[0]
 
     loc_est = results['loc']
 
@@ -674,10 +679,12 @@ def detect_image(model, dataset, img_path):
     R_wo = R_wc*R_co
     roll, pitch, yaw = se3lib.SO32euler(R_wo)
     #
+    print('ORIENTATION: ')
     print(str(-pitch) + " " + str(yaw) + " " + str(-roll))
 
     # Stack frame gt
     pose_est = np.array([loc_est[2], loc_est[0], loc_est[1], -pitch, yaw, -roll])
+    print('POSE ESTIMATE: ')
     print(pose_est)
 
     # Crop and resize image to match original input size
@@ -688,7 +695,8 @@ def detect_image(model, dataset, img_path):
     #fig, ax_1 = plt.subplots(1, 1, figsize=(12, 8))
 
     utils.plot_axes(image, q_est, loc_est, K, 5.0)
-    cv2.imshow('Preview image', image)
+    win_name = 'Final Image'
+    cv2.imshow(win_name, image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
