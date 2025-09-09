@@ -38,9 +38,9 @@ import speed
 import gc
 
 # Non-interactive mode for matplotlib
-import matplotlib
-matplotlib.use('Agg')
-plt.ioff()
+# import matplotlib
+# matplotlib.use('Agg')
+# plt.ioff()
 
 # Models directory (where weights are stored)
 MODEL_DIR = os.path.abspath("./models")
