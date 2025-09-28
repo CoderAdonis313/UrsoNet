@@ -14,10 +14,12 @@ import os
 import os.path
 import warnings
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-warnings.filterwarnings('ignore')
-warnings.filterwarnings('ignore', category=FutureWarning)  # hide deprecation warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
+########################## DISABLE GPU ########################
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# warnings.filterwarnings('ignore')
+# warnings.filterwarnings('ignore', category=FutureWarning)  # hide deprecation warnings
+# warnings.filterwarnings('ignore', category=DeprecationWarning)
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"   # disable all GPUs
 
 import numpy as np
 import skimage
@@ -724,7 +726,8 @@ def detect_video(model, dataset, video_path):
 
     # Define codec and create video writer
     timestamp = time.strftime('%H_%M_%S')
-    vwriter = cv2.VideoWriter(f"./outputs/output_{timestamp}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
+    VIDEO_NAME = f"./outputs/output_{timestamp}.mp4"
+    vwriter = cv2.VideoWriter(VIDEO_NAME, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
 
     count = 0
     pose_est_acc = []
@@ -800,7 +803,7 @@ def detect_video(model, dataset, video_path):
             # Add image to video writer
             vwriter.write(image)
         elif count >= frames:
-            print('Processing finished')
+            print(f'Finished processing {VIDEO_NAME}')
         else:
             raise Exception('Unable to read video file')
 
